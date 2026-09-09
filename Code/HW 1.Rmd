@@ -7,6 +7,9 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+library(kableExtra)
+library(tidyverse)
 ```
 
 ```{r}
@@ -14,6 +17,30 @@ knitr::opts_chunk$set(echo = TRUE)
 
 lead <- read.csv("C:\\Users\\erinc\\OneDrive - Colorado School of Mines\\Desktop\\Statistical Consulting\\HW 1\\cooper_BIOS6621\\DataRaw\\lead-iq-01.csv")
 
-head(lead)
+#View(lead)
 ```
+
+```{r}
+#the following code intends to create a graph showing the IQ levels by location status
+
+ggplot(data = lead, aes(x = Smelter, y = IQ))+geom_boxplot()+labs(title = "Smelter distance vs. IQ")
+```
+
+```{r}
+#the following code intends to create a nice looking table
+table = lead %>% drop_na(Smelter, IQ) %>% group_by(Smelter) %>%
+  summarise(
+    Median = median(IQ),
+    Mean = round(mean(IQ), 2),
+    n = n())
+
+kbl(table, col.names = c("Smelter", "Median", "Mean", "Number of Participants"), booktabs = TRUE, caption = "A table presenting summary statistics for participants in the study.") %>% kable_styling(latex_options = "striped")
+```
+The graph above displays the distribution of the IQ's of the participants depending on their proximity to the smelter. 
+
+The table above displays the smelter distance, as well as the median and mean of the participants. The median was added in addition to the mean because one of the data points is significantly different from the others which could skew the mean.
+
+## AI use disclaimer
+The google AI search function was used to remember to function for the box plot function in ggplot.
+
 
