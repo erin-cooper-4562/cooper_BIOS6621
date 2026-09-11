@@ -21,6 +21,14 @@ lead <- read.csv("C:\\Users\\erinc\\OneDrive - Colorado School of Mines\\Desktop
 ```
 
 ```{r}
+#replaces the outlier value with 99 instead of 999
+outlier <- which(lead$IQ == 999)
+
+lead[outlier,2] = 99
+```
+
+
+```{r}
 #the following code intends to create a graph showing the IQ levels by location status
 
 ggplot(data = lead, aes(x = Smelter, y = IQ))+geom_boxplot()+labs(title = "Smelter distance vs. IQ")
@@ -36,6 +44,7 @@ table = lead %>% drop_na(Smelter, IQ) %>% group_by(Smelter) %>%
 
 kbl(table, col.names = c("Smelter", "Median", "Mean", "Number of Participants"), booktabs = TRUE, caption = "A table presenting summary statistics for participants in the study.") %>% kable_styling(latex_options = "striped")
 ```
+
 The graph above displays the distribution of the IQ's of the participants depending on their proximity to the smelter. The mean of the overall IQ was: `r mean(lead$IQ)`. 
 
 The table above displays the smelter distance, as well as the median and mean of the participants. The median was added in addition to the mean because one of the data points is significantly different from the others which could skew the mean.
