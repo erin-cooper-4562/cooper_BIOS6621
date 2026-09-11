@@ -36,11 +36,11 @@ table = lead %>% drop_na(Smelter, IQ) %>% group_by(Smelter) %>%
 
 kbl(table, col.names = c("Smelter", "Median", "Mean", "Number of Participants"), booktabs = TRUE, caption = "A table presenting summary statistics for participants in the study.") %>% kable_styling(latex_options = "striped")
 ```
-The graph above displays the distribution of the IQ's of the participants depending on their proximity to the smelter. 
+The graph above displays the distribution of the IQ's of the participants depending on their proximity to the smelter. The mean of the overall IQ was: `r mean(lead$IQ)`. 
 
 The table above displays the smelter distance, as well as the median and mean of the participants. The median was added in addition to the mean because one of the data points is significantly different from the others which could skew the mean.
 
 ## AI use disclaimer
-The google AI search function was used to remember to function for the box plot function in ggplot.
+The Google AI search function was used to remember the function for the box plot function in ggplot.
 
 
