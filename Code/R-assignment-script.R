@@ -329,7 +329,13 @@ Executions_df$Year <- Year
 Executions_df$color <- ifelse(Year < 1984, "red", "blue")
 View(Executions_df)
 
-plot(Executions_df$Year, Executions_df$Executions, pch = 19, main="Execution in the U.S. (1976-1994)", xlab = "Year", ylab = "Executions", col = Executions$color)
+## CJH: This is an interesting solution, but you called the wrong dataset
+# so it wasn't working
+
+plot(Executions_df$Year, Executions_df$Executions, 
+     pch = 19, main="Execution in the U.S. (1976-1994)", 
+     xlab = "Year", ylab = "Executions", 
+     col = Executions_df$color)
 legend(x = "topleft", legend = c("< 1984", ">= 1984"), fill = unique(Executions_df$color), title = "Years")
 abline(v = 1983.5, col = "black")
 
@@ -359,6 +365,7 @@ pnorm(18, mean = 10, sd = 4, lower.tail = FALSE)
 qnorm(.975, mean = 10, sd = 4, lower.tail = TRUE)
 #       f. Make a smooth line graph of the N(10, 16) density.  Don't superimpose on the histogram.
 
+## CJH: This solution works but could have been made much simpler
 vals = c()
 for (i in seq(-30, 30, by = 0.01)){
   vals = c(vals, dnorm(x = i, mean = 10, sd = 4))
@@ -387,7 +394,9 @@ x[c(3:7)-2] #iterates through all values of 3 -> 7, and subtracts 2 at every ind
 x[c(3:7)]-2 #iterates through all values of 3 -> 7, creates a list, finds the value of some vector x at the indices specified in the list, and subtracts 2 from each value of x
 xy.mat[14, ] #accesses all values in the row at index 14 in the xy matrix
 xy.mat[c(2:4)] #accesses all values in the rows 2:4 in the xy matrix
+## CJH: ^ are you sure about that?
 cbind(x, lab) #binds the x matrix to the lab matrix vertically, or you are stacking their columns next to one another
+## CJH: ^ but what happens when you do that?
 
 # Ex 7: Using the object xy.mat and not making any new assignments (don't use <-),
 #       graph y2 versus x, omitting the 4th row, and with axis labels "y2" and "x"
