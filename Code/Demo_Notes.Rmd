@@ -1,0 +1,38 @@
+---
+title: "Demo"
+author: "Erin Cooper"
+date: "2026-10-12"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(gtsummary)
+library(here)
+```
+
+```{r, echo = FALSE}
+df <- read.csv(here::here("DataRaw", "Week_07_VA_Data.csv"))
+#no 38 value for 6 months
+table(df$sixmonth, useNA = "always") %>% prop.table()
+
+tbl_summary(df)
+
+filter(df, is.na(proced)) %>% head()
+
+table(is.na(df$proced), is.na(df$weight))
+
+hist(df$asa)
+
+weight_df <- df %>% filter(weight < 100)
+tbl_summary(weight_df)
+ggplot(data = df, aes(x = weight, y = height)) + geom_point()
+```
+
+Questions for Dr. Person: 
+- What happened to 6month 38? Why is 37 so big?
+- What is proced 2? Is this real?
+- Are all weights coded properly? Are some in kg? See certain hospitals :)
+- What is the measure for height, is this inches? What about feet?
+- Always check calculated value. 
