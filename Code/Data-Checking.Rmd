@@ -1,0 +1,133 @@
+---
+title: "Data Checking"
+author: "Erin Cooper"
+date: "2026-10-16"
+output: pdf_document
+---
+
+## Background
+  Students in medicine from underrepresented backgrounds (URM) such as; American Indian/Alaska Native, Hispanic, Vietnamese, Black/African American, and Native Hawaiian, have experienced bias that has negatively impacted their ability to succeed in medicine. This bias has been observed in USMLE scores, as well as clerkship scores previously. This study aims to determine if pre-clinical Objective Structured Clinical Skills Examination (OSCE) scores for students who are URM are different from students who don’t fall under that category. This study will focus on physical exam and communication exam OSCE scores for these students. 
+
+## Data Checking
+  The following data from the University of the Colorado School of Medicine (CUSOM) for the graduating class of 2020, has issues with NMAR (not missing at random) values. When the data were examined to detect patterns in the missing data, it was first observed that the AAC_clinical_grade and the RCC_clinical_grade columns are missing the same values at the same locations. This spurred further investigation of the data with the missing OSCE scores, since they also appear to have some similar pattern to their missingness. When the data set was split into 2 separate data sets for the missing vs. non-missing OSCE data, it was observed that the individuals who were not missing their communication OSCE data were missing all of their AAC_clinical_grade and RCC_clinical_grade scores. Additionally, it was observed for individuals who were missing their communication OSCE scores, that some of them were missing some of their AAC and RCC clinical grade scores, but not all. 
+  
+  A reasonable explanation for this missingness is that 2 separate data sets were combined into this current data set, where some students were missing their AAC and RCC clinical grade scores, but had their OSCE scores in one of the data sets. Because the rest of the data does not appear to be skewed for or against, students with/without OSCE scores, this data can be reasonably used for statistical analysis. See Table 2 and Table 3 in the appendix for a comparison of these two data sets. 
+
+  In addition, clinical grades, USMLE scores, and the averages of the physical examination and communication OSCE exams were examined and stratified by whether or not a student is underrepresented in medicine. It appears from a brief examination of Table 1, as well as the graphs presented below, that students that are underrepresented in medicine tend to do slightly worse than their peers when it comes to grading. However, further analysis is necessary to confirm if this difference is statistically significant. 
+
+```{r setup, include=FALSE}
+library(gtsummary)
+library(tidyverse)
+library(glue)
+library(flextable)
+set_flextable_defaults(fonts_ignore=TRUE)
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+#loads in dataframe
+df <- read.csv(here::here("DataRaw", "BIOS6621_Guth_data.csv"))
+#View(df)
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+#checks for which columns have NA values
+na_df <- colSums(is.na(df))
+#na_df
+
+#confirms that the AAC_clinical_grade values and the RCC_clinical_grade values are not missing at random.
+#is.na(df$AAC_clinical_grade) == is.na(df$RCC_clinical_grade)
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+#creates new dataframes for the calculation of the physical exam scores and the communication scores for the OSCE exam respectively
+phys_df <- df %>% select(ends_with("PhysExamScore"))
+#colnames(phys_df)
+comm_df <- df %>% select(ends_with("CommScore"))
+#colnames(comm_df)
+
+phys_df <- phys_df %>% mutate(OSCE_phys_exam_avg = (P1SprBates_PhysExamScore + P1FallBodySys_PhysExamScore + P2FallRamos_PhysExamScore + P2FallPayne_PhysExamScore + P2SpringHyde_PhysExamScore + P2SpringSnelling_PhysExamScore)/(ncol(phys_df)))
+
+comm_df <- comm_df %>% mutate(OSCE_comm_exam_avg = (P1SprBates_CommScore + P2FallRamos_CommScore + P2FallPayne_CommScore + P2SpringHyde_CommScore + P2SpringSnelling_CommScore)/(ncol(comm_df)))
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+final_df <- df %>% select(ends_with("clinical_grade"), URM, STEP1_ExamScore, STEP2CK_ExamScore, gender)
+
+final_df$OSCE_phys_exam_avg <- phys_df$OSCE_phys_exam_avg
+
+final_df$OSCE_comm_exam_avg <- comm_df$OSCE_comm_exam_avg
+
+#compares those missing OSCE scores to those not missing OSCE scores
+missing_OSCE <- final_df %>% filter(is.na(OSCE_comm_exam_avg))
+non_missing_OSCE <- final_df %>% filter(!is.na(OSCE_comm_exam_avg))
+
+#View(missing_OSCE)
+#View(non_missing_OSCE)
+final_df %>% tbl_summary(by = URM) %>% modify_caption("Data stratified by URM Status") %>% as_flex_table() %>% set_table_properties("autofit")
+
+#tbl_summary(final_df, by = gender)
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+ggplot(data = final_df, aes(x = OBG_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "OBG Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+```
+As can be seen from the bar chart above, as well as the bar charts presented in the appendix, URM students tend to make up a smaller proportion of "honors" students, which is represented as 3 for clinical grades. In addition, they tend to make up a larger proportion of "passing" students, which is represented as 1 for clinical grades. However, from these bar charts, it is difficult to say whether these observed differences are significant between URM and non-URM students. 
+
+```{r, echo = FALSE}
+#===============================================================================
+par(mfrow = c(1,2))
+ggplot(data = final_df, aes(x = factor(URM), y = STEP1_ExamScore))+geom_boxplot()+labs(title = "STEP1 Exam Score vs. URM Identification")
+ggplot(data = final_df, aes(x = factor(URM), y = STEP2CK_ExamScore))+geom_boxplot()+labs(title = "STEP2 Exam Score vs. URM Identification")
+```
+From the box plots presented above, it appears that students who identify as URM tend to have lower STEP1 and STEP2 exam scores. However, similar to above, further analysis must be conducted to determine if this is significant. 
+```{r, echo = FALSE}
+#===============================================================================
+par(mfrow = c(1,2))
+ggplot(data = final_df, aes(x = factor(URM), y = OSCE_phys_exam_avg))+geom_boxplot()+labs(title = "Average OSCE Physical Exam Score vs. URM Identification")
+ggplot(data = final_df, aes(x = factor(URM), y = OSCE_comm_exam_avg))+geom_boxplot()+labs(title = "Average OSCE Communication Exam Score vs. URM Identification")
+```
+From the box plots presented above, it appears that students who identify as URM tend to have slightly lower OSCE scores. However, further analysis must be conducted to determine if this difference is significant. 
+
+## Conclusion
+  There appears to be some irregular patterns in the data with regard to missingness, however these patterns should not impact the ability to run statistical tests on the data for the variables that Dr. Guth is interested in analyzing. In addition, there appears to be some negative bias towards URM students, however from a simple look at the data, it is difficult to tell if this difference is significant. 
+
+## Figure Appendix
+```{r, echo = FALSE}
+#===============================================================================
+missing_OSCE %>% tbl_summary() %>% modify_caption("Missing OSCE") %>% as_flex_table() %>% set_table_properties("autofit")
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+non_missing_OSCE %>% tbl_summary() %>% modify_caption("**Table 3. Non-Missing OSCE**") %>% as_flex_table() %>% set_table_properties("autofit")
+```
+
+```{r, echo = FALSE}
+#===============================================================================
+ggplot(data = final_df, aes(x = AAC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "AAC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = CPC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "CPC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = HAC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "HAC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = ICAC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "ICAC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = NC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "NC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = OPC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "OPC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = PC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "PC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+
+ggplot(data = final_df, aes(x = RCC_clinical_grade, fill = factor(URM)))+geom_bar()+labs(title = "RCC Clinical Grade vs. URM Students Count")+scale_fill_discrete(name = "URM Student Identification", labels = c("Not URM", "URM", "Decline to Respond"))
+```
+
+
+## Code Appendix
+
+```{r, ref.label=knitr::all_labels(), tidy.opts = list(width.cutoff = 90), echo=TRUE, eval=FALSE, tidy = TRUE}
+```
